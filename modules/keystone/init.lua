@@ -19,7 +19,6 @@ local https = require('https')
 local table = require('table')
 local fmt = require('string').format
 local url = require('url')
-local logging = require('logging')
 
 local Client = Object:extend()
 function Client:initialize(authUrl, options)
@@ -105,12 +104,6 @@ function Client:_updateToken(callback)
       if payload.access then
         newToken = payload.access.token.id
         newExpires = payload.access.token.expires
-
-        if self._token ~= newToken then
-          logging.info('Received updated admin token')
-        else
-          logging.info('Received identical admin token')
-        end
       else
         callback('Invalid response from auth server')
         return
