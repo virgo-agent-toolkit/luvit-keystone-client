@@ -29,7 +29,7 @@ function Client:initialize(authUrl, options)
   self.apikey = options.apikey
   self.password = options.password
   self.extraArgs = options.extraArgs or {}
-  self.tfaCallback = options.tfaCallback
+  self.mfaCallback = options.mfaCallback
   if authUrl:find('http:') then
     self._proto = http
   else
@@ -42,15 +42,15 @@ function Client:initialize(authUrl, options)
 
 end
 
-function Client:setTFACallback(callback)
-  self.tfaCallback = callback
+function Client:setMFACallback(callback)
+  self.mfaCallback = callback
 end
 
 function Client:_updateToken(callback)
   local parsed = url.parse(self.authUrl)
 
   local iter
-  iter = function(tfaOptions)
+  iter = function(mfaOptions)
     local client
     local body
     local options
@@ -60,12 +60,12 @@ function Client:_updateToken(callback)
 
     local urlPath = fmt('%s/tokens', parsed.pathname)
 
-    if tfaOptions then
-      headers['X-SessionId'] = tfaOptions.session_id
+    if mfaOptions then
+      headers['X-SessionId'] = mfaOptions.session_id
       body = {
         ['auth'] = {
           ['RAX-AUTH:passcodeCredentials'] = {
-            ['passcode'] = tfaOptions.passcode
+            ['passcode'] = mfaOptions.passcode
           }
         }
       }
@@ -99,21 +99,21 @@ function Client:_updateToken(callback)
       method = 'POST'
     }
 
-    local function handleTFAResponse(res)
+    local function handleMFAResponse(res)
       if res.headers['www-authenticate'] then
         local auth = res.headers['www-authenticate']
         local sidx = auth:find('\'')
         local eidx = auth:find('\'', sidx + 1)
-        local tfa_options = {}
-        tfa_options.session_id = auth:sub(sidx + 1, eidx - 1)
-        tfa_options.passcode = nil
-        if self.tfaCallback then
-          self.tfaCallback(function(err, passcode)
+        local mfa_options = {}
+        mfa_options.session_id = auth:sub(sidx + 1, eidx - 1)
+        mfa_options.passcode = nil
+        if self.mfaCallback then
+          self.mfaCallback(function(err, passcode)
             if err then
               callback(err)
             else
-              tfa_options.passcode = passcode
-              iter(tfa_options)
+              mfa_options.passcode = passcode
+              iter(mfa_options)
             end
           end)
         end
@@ -162,7 +162,7 @@ function Client:_updateToken(callback)
 
     local function handleResponse(res)
       if res.statusCode == 401 then
-        handleTFAResponse(res)
+        handleMFAResponse(res)
       else
         handleTokenResponse(res)
       end
