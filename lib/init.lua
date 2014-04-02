@@ -128,7 +128,6 @@ function Client:_updateToken(callback)
         data = data .. chunk
       end)
       res:on('end', function()
-        print(data)
         local json, payload, newToken, newExpires
         local results  = {
           xpcall(function()
