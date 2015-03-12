@@ -1,5 +1,5 @@
 return {
-  name = "virgo-agent-toolkit/luvit-keystone-client",
+  name = "virgo-agent-toolkit/keystone-client",
   version = "0.2.0",
   description = "Rackspace Monitoring Client",
   author = "Ryan Phillips <ryan.phillips@rackspace.com>",
