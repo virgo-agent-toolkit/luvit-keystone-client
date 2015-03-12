@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,11 +16,6 @@ limitations under the License.
 local JSON = require('json')
 local Object = require('core').Object
 local Error = require('core').Error
-local https = require('https')
-local http = require('http')
-local table = require('table')
-local fmt = require('string').format
-local url = require('url')
 local request = require('request').request
 
 local Client = Object:extend()
@@ -43,18 +38,14 @@ function Client:setMFACallback(callback)
 end
 
 function Client:_updateToken(callback)
-  local parsed = url.parse(self.authUrl)
 
   local iter
   iter = function(mfaOptions)
-    local client
     local body
     local options
     local headers = {}
     headers['Accept'] = 'application/json'
     headers['Content-Type'] = 'application/json'
-
-    local urlPath = fmt('%s/tokens', parsed.pathname)
 
     if mfaOptions then
       headers['X-SessionId'] = mfaOptions.session_id
@@ -197,6 +188,4 @@ function Client:tenantIdAndToken(callback)
   end)
 end
 
-local exports = {}
 exports.Client = Client
-return exports
