@@ -30,7 +30,6 @@ function Client:initialize(authUrl, options)
   self._tokenExpires = nil
   self._tenantId = nil
   self._serviceCatalog = {}
-
 end
 
 function Client:setMFACallback(callback)
@@ -43,12 +42,13 @@ function Client:_updateToken(callback)
   iter = function(mfaOptions)
     local body
     local options
-    local headers = {}
-    headers['Accept'] = 'application/json'
-    headers['Content-Type'] = 'application/json'
+    local headers = {
+      {'Content-Type', 'application/json'},
+      {'transfer-encoding', 'chunked'},
+    }
 
     if mfaOptions then
-      headers['X-SessionId'] = mfaOptions.session_id
+      table.insert(headers, {'X-SessionId', mfaOptions and mfaOptions.session_id })
       body = {
         ['auth'] = {
           ['RAX-AUTH:passcodeCredentials'] = {
@@ -77,7 +77,8 @@ function Client:_updateToken(callback)
     end
 
     body = JSON.stringify(body)
-    headers['Content-Length'] = #body
+    table.insert(headers, {'Content-Length', #body})
+
     options = {
       url = self.authUrl,
       headers = headers,
@@ -109,15 +110,17 @@ function Client:_updateToken(callback)
     end
 
     local function handleTokenResponse(res)
-      local data = ''
+      local data = {}
       res:on('data', function(chunk)
-        data = data .. chunk
+        p(chunk)
+        table.insert(data, chunk)
       end)
       res:on('end', function()
-        local json, payload, newToken, newExpires
+        local payload, newToken, newExpires
+        p(data)
         local results  = {
           xpcall(function()
-            return JSON.parse(data)
+            return JSON.parse(table.concat(data))
           end, function(err)
             return err
           end)

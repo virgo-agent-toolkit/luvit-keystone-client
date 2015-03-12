@@ -6,7 +6,7 @@ return {
   dependencies = {
     "luvit/luvit@2.0.0",
     "rphillips/async@0.0.2",
-    "virgo-agent-toolkit/request@0.2.0"
+    "virgo-agent-toolkit/request@0.2.1"
   },
   files = {
     "**.lua"
