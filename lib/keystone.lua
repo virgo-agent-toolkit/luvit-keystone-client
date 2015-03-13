@@ -40,11 +40,9 @@ function Client:_updateToken(callback)
 
   local iter
   iter = function(mfaOptions)
-    local body
-    local options
+    local body, options
     local headers = {
       {'Content-Type', 'application/json'},
-      {'transfer-encoding', 'chunked'},
     }
 
     if mfaOptions then
@@ -110,28 +108,25 @@ function Client:_updateToken(callback)
     end
 
     local function handleTokenResponse(res)
-      local data = {}
+      local chunks = {}
       res:on('data', function(chunk)
-        p(chunk)
-        table.insert(data, chunk)
+        table.insert(chunks, chunk)
       end)
       res:on('end', function()
         local payload, newToken, newExpires
-        p(data)
         local results  = {
           xpcall(function()
-            return JSON.parse(table.concat(data))
+            return JSON.parse(table.concat(chunks))
           end, function(err)
             return err
           end)
         }
         -- protected call errored out
         if not results[1] then
-          callback(results[1])
-          return
+          return callback(results[1])
         end
-        payload = results[2]
 
+        payload = results[2]
         if payload.access then
           newToken = payload.access.token.id
           newExpires = payload.access.token.expires
