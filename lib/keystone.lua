@@ -167,7 +167,7 @@ function Client:_updateToken(callback)
   iter()
 end
 
-function Client:tenantIdAndToken(callback)
+function Client:tenantIdAndToken(providerName, callback)
   self:_updateToken(function(err, token)
     if err then
       callback(err)
@@ -175,11 +175,12 @@ function Client:tenantIdAndToken(callback)
     end
     for i, _ in ipairs(self._serviceCatalog) do
       local item = self._serviceCatalog[i]
-      if item.name == 'cloudMonitoring' then
+      if item.name == providerName then
         if #item.endpoints == 0 then
           error('Endpoints should be > 0')
         end
         self._tenantId = item.endpoints[1].tenantId
+        break
       end
     end
     callback(nil, { token = self._token, expires = self._tokenExpires, tenantId = self._tenantId })
