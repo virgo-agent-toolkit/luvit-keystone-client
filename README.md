@@ -12,7 +12,7 @@ complete... yet.
       apikey = 'apikey'
     }
     local client = KeystoneClient:new(authUrl, options)
-    client:tenantIdAndToken(function(err, obj)
+    client:tenantIdAndToken('cloudMonitoring', function(err, obj)
       if err then
         p(err)
         return
